@@ -60,9 +60,11 @@ public class TimeSeries {
 	public static double[] reduceDimensions(double[] ts, int d) {
 		double[] reducedTimeSeries = new double[d];
 		int n = ts.length;
-		int s = (int) Math.ceil((double)n / (double)d);
+		double s = (double)n / (double)d;
+
+		System.out.println(s);
 		for (int i = 0; i < n; i++) {
-			reducedTimeSeries[i/s] += ts[i];
+			reducedTimeSeries[(int)(i/s)] += ts[i];
 		}
 		for (int i = 0; i < d; i++) {
 			if (i * s <= n) {
@@ -164,7 +166,7 @@ public class TimeSeries {
     public static void main(String[] args) throws Exception {
 		int n = 159;
 		int d = 80;
-		int a = 8;
+		int a = 4;
 		double[] ts = new double[n];
 		double[] rts;
 		double[] dts;
@@ -210,49 +212,60 @@ public class TimeSeries {
 		}		
 		
 		System.out.println("Drawing Graph...");
-		StdDraw.setCanvasSize(800,600);
+		StdDraw.setCanvasSize(1000,600);
 		StdDraw.setXscale(0, n);
-		StdDraw.setYscale(-2,2);
+		StdDraw.setYscale(-2.5,2.5);
 		StdDraw.setPenRadius(0.005);
-		StdDraw.line(0, 0, n, 0);
-		StdDraw.line(0, -2, 0, 2);
-		StdDraw.setPenColor(StdDraw.BLUE);
+		StdDraw.setPenColor(StdDraw.BLACK);
 		StdDraw.show(100);
-		for (int i = 0; i < n; i++) {
-			StdDraw.point(i, ts[i]);
+		StdDraw.line(0, 0, n, 0);
+		StdDraw.line(0, -3, 0, 3);
+		StdDraw.text(-5,0,"0.0");
+		StdDraw.text(-5,-2,"-2.0");
+		StdDraw.text(-5,2,"2.0");
+		StdDraw.show(100);
+		StdDraw.setPenRadius(0.001);
+		StdDraw.setPenColor(StdDraw.LIGHT_GRAY);
+		double r = ((double)n/(double)d);
+		for (int i = 2; i <= d; i+=2) {
+			int x = (int)(i * r);
+			StdDraw.line(x, -4, x, 4);
+			StdDraw.text(x, -2.5, "" + i);
 		}
-		StdDraw.show();
 		System.out.println("Finding motifs...");
 		GeneralizedSuffixTree gst = new GeneralizedSuffixTree();
 		ArrayList<Pair> results = new ArrayList<Pair>();
 		int ind = 0;
 		Color color[] = {StdDraw.RED,StdDraw.GREEN,StdDraw.BLUE,StdDraw.YELLOW,StdDraw.CYAN,StdDraw.ORANGE};
 		int col = 0;
-		StdDraw.setPenRadius(0.001);
+		StdDraw.setPenRadius(0.002);
 		int count = 0;
-		int num = 1;
+		int num = 0;
 		while (!pq.isEmpty()) {
 			Pair p = pq.remove();
 			Collection<Integer> c = gst.search(p.key);
 			if (c == null) { //This string is very unique
 				gst.put(p.key, ind++);
 				results.add(p);
-
-				if (count < num) {
+				if (count <= num) {
 					count ++;
+					//System.out.println(count + ": " + p.key);
 					StdDraw.setPenColor(color[col++]);
 					int z = 0;
 					int v = 0;
 					while (z < series.length()) {
 						int st = series.indexOf(p.key, z);
 						if (st == -1) break;
-						int en = st + p.key.length();
+						int en = st + p.key.length() - 1;
 						z = st + 1;
-						double s = (n/d) +1 ;
-						double h = 2.3 - ((v % 3) * 0.05) - (col * 0.2);
-						StdDraw.line(st * s, -4, st * s, h);
-						StdDraw.line(en * s, -4, en * s, h);
-						StdDraw.line(st * s, h, en * s, h);
+						double h = 2.5 - ((v % 3) * 0.03) - (col * 0.1);
+						double stTrans = (st * r);
+						double enTrans = (en * r);
+						StdDraw.line(stTrans, -4, stTrans, h);
+						StdDraw.line(enTrans, -4, enTrans, h);
+						StdDraw.line(stTrans, h, enTrans, h);
+						System.out.println(p.count + ": " + p.key);
+						System.out.println("(" + st + " - " + en + ")");
 						v++;
 					}
 				}
@@ -276,7 +289,7 @@ public class TimeSeries {
 					gst.put(p.key, ind++);
 					results.add(p);
 
-					if (count < num) {
+					if (count <= num) {
 						count ++;
 						StdDraw.setPenColor(color[col++]);
 						int z = 0;
@@ -284,13 +297,16 @@ public class TimeSeries {
 						while (z < series.length()) {
 							int st = series.indexOf(p.key, z);
 							if (st == -1) break;
-							int en = st + p.key.length();
+							int en = st + p.key.length() - 1;
 							z = st + 1;
-							double s = (n/d) +1 ;
-							double h = 2.5 - ((v % 3) * 0.1) - (col * 0.35);
-							StdDraw.line(st * s, -2, st * s, h);
-							StdDraw.line(en * s, -2, en * s, h);
-							StdDraw.line(st * s, h, en * s, h);
+							double h = 2.5 - ((v % 3) * 0.03) - (col * 0.1);
+							double stTrans = (st * r);
+							double enTrans = (en * r);
+							StdDraw.line(stTrans, -4, stTrans, h);
+							StdDraw.line(enTrans, -4, enTrans, h);
+							StdDraw.line(stTrans, h, enTrans, h);
+							System.out.println(p.count + ": " + p.key);
+							System.out.println("(" + st + " - " + en + ")");
 							v++;
 						}
 					}
@@ -298,11 +314,34 @@ public class TimeSeries {
 				}
 			}
 		}
+
+		StdDraw.setPenRadius(0.005);
+		StdDraw.setPenColor(StdDraw.BLACK);
+		for (int i = 0; i < n-1; i++) {
+			int j = i + 1;
+			StdDraw.line(i, ts[i], j, ts[j]);
+		}
+		StdDraw.setPenRadius(0.01);
+		StdDraw.setPenColor(StdDraw.RED);
+		for (int i = 0; i < n; i++) {
+			StdDraw.point(i, ts[i]);
+		}
+		StdDraw.setPenColor(StdDraw.RED);
+		for (int i = 0; i < d-1; i++) {
+			int j = i + 1;
+			//StdDraw.line((i * r), (dts[i] - (a / 2.0)) / (a / 2.0) * 2, (j * r), (dts[j] - (a / 2.0)) / (a / 2.0) * 2);
+		}
+		StdDraw.setPenColor(StdDraw.RED);
+		for (int i = 0; i < d; i++) {
+			//StdDraw.point((i * r), (dts[i] - (a / 2.0)) / (a / 2.0) * 2);
+		}
+		StdDraw.show();
 		System.out.println("Complete.");
     }
     private static class Pair implements Comparable<Pair>{
     	final public String key;
     	final public int count;
+    	final public int threshold = 2;
     	private Pair (String k, int c) {
     		key = k;
     		count = c;
@@ -317,7 +356,20 @@ public class TimeSeries {
 			} else return -1;
 		}
 		public boolean contains(String s) {
-			return this.key.contains(s);
+			if (this.key.contains(s)) return true;
+			/*
+			else {
+				for (int i = 0; i < this.key.length() - s.length(); i++) {
+					boolean similar = true;
+					for (int j = 0; j < s.length(); j++) {
+						if (Math.abs(s.charAt(j) - this.key.charAt(i + j)) > threshold) {
+							similar = false;
+						}
+					}
+					if (similar) return true;
+				}
+			}*/
+			return false;
 		}
     }
 }

@@ -9,30 +9,31 @@ import java.util.Scanner;
 import stdlib.StdDraw;
 
 public class PointSetVideo implements Runnable{
+	static PointSetVideo skeleton, contour;
 	public static void main (String[] args) throws Exception {
 		//SMALLEST N == 224
 		//System.out.println("Smallest n: " + smallest);
 		
 		//Multithread! Load video while playing it
-		PointSetVideo skeleton = new PointSetVideo("data/downSampled40.txt");
-		PointSetVideo contour = new PointSetVideo("data/contour.txt");
+		skeleton = new PointSetVideo("data/skeleton.txt");
+		//contour = new PointSetVideo("data/contour.txt");
 		Thread t1 = new Thread(skeleton,"skeleton");
-		Thread t2 = new Thread(contour,"contour");
+		//Thread t2 = new Thread(contour,"contour");
 		t1.start();
-		t2.start();
+		//t2.start();
 		//Display video (or buffer)
 		int c = 0;
-		StdDraw.setCanvasSize(1024,1024);
-		StdDraw.setXscale(0,1024);
-		StdDraw.setYscale(1024,0);
+		StdDraw.setCanvasSize(512,512);
+		StdDraw.setXscale(-128,128);
+		StdDraw.setYscale(-128,128);
 		StdDraw.setPenRadius(0.001);
 		StdDraw.show(100);
 		while (true) {
 			if (StdDraw.isKeyPressed(KeyEvent.VK_Q)) {
 				break;
 			}
-			if (c >= contour.n || c >= skeleton.n) {
-				if (contour.done && skeleton.done) {
+			if (c >= skeleton.n) {
+				if (skeleton.done) {
 					//Restart!
 					c = 0;
 				} else {
@@ -41,19 +42,31 @@ public class PointSetVideo implements Runnable{
 					continue;
 				}
 			}
-			StdDraw.clear();
-			StdDraw.setPenColor(StdDraw.BLACK);
-			StdDraw.text(50, 50, "" + c + " / " + skeleton.n + " / " + contour.n);
-
-			StdDraw.setPenColor(StdDraw.BLACK);
-			contour.get(c).draw();
-			StdDraw.setPenColor(StdDraw.RED);
-			skeleton.get(c).draw();
+			if (StdDraw.isKeyPressed(KeyEvent.VK_RIGHT)) {
+				if (StdDraw.isKeyPressed(KeyEvent.VK_SHIFT)) {
+					c+= 10;
+					draw(c);
+				} else {
+					draw(c++);
+				}
+			}
+			if (StdDraw.isKeyPressed(KeyEvent.VK_LEFT)) {
+				draw(c--);
+			}
 			StdDraw.show(100);
-			c++;
 		}
 	}
-	
+	public static void draw(int c) {
+		StdDraw.clear();
+		StdDraw.setPenRadius(0.001);
+		StdDraw.setPenColor(StdDraw.BLACK);
+		StdDraw.text(50, 128, "" + c + " / " + skeleton.n);
+		StdDraw.setPenColor(StdDraw.RED);
+		CoordSet skel = skeleton.get(c);
+		skel.sample(100); //derp
+		skel.draw(skel.xMean, skel.yMean);
+		//StdDraw.show(100);
+	}
 	
 	File file;
 	boolean done = false;

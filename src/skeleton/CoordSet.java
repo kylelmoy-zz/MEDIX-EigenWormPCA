@@ -11,6 +11,8 @@ import stdlib.StdDraw;
 public class CoordSet {
 	int[] x;
 	int[] y;
+	double xMean;
+	double yMean;
 	double[] vec;
 	int n = 0;
 	public CoordSet (String skl) {
@@ -29,7 +31,21 @@ public class CoordSet {
 		}
 		in.close();
 		calculateVectors();
+		centroid();
 		//System.out.println(skl);
+	}
+	public void centroid() {
+		double xSum = 0;
+		double ySum = 0;
+
+		for (int i = 0; i < n; i++) {
+			xSum += x[i];
+			ySum += y[i];
+		}
+		xSum /= n;
+		ySum /= n;
+		xMean = xSum;
+		yMean = ySum;
 	}
 	private void calculateVectors() {
 		double[] v = new double[n - 1];
@@ -59,6 +75,11 @@ public class CoordSet {
 			StdDraw.point(x[i], y[i]);
 		}
 	}
+	public void draw(double xoff, double yoff) {
+		for (int i = 0; i < n; i ++) {
+			StdDraw.point(x[i] - xoff, y[i] - yoff);
+		}
+	}
 	public void sample(int n) {
 		int[] newX = new int[n];
 		int[] newY = new int[n];
@@ -78,5 +99,6 @@ public class CoordSet {
 		y = newY;
 		this.n = n;
 		calculateVectors();
+		centroid();
 	}
 }
